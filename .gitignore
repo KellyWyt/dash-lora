@@ -1,0 +1,25 @@
+# 忽略所有模型权重文件夹
+pretrained_ckpts/
+*checkpoint*/
+
+# 忽略数据集文件夹
+AVE_Dataset/
+MokA_AudioVisualText/
+results/
+music-avqa/
+gpu-watchdog/
+label_file/
+
+# 忽略所有的日志文件和临时文本
+*.log
+*.txt
+nohup.out
+
+# 忽略 Python 缓存和环境
+__pycache__/
+.pytest_cache/
+.vscode/
+
+# 忽略您刚才为了复制而创建的临时公钥文件
+my_key.txt
+zi00Wgbt
