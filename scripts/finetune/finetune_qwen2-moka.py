@@ -235,6 +235,8 @@ def train(attn_implementation=None):
         trainer.train(resume_from_checkpoint=True)
     else:
         trainer.train()
+    final_checkpoint_dir = trainer.save_final_checkpoint()
+    rank0_print(f'final checkpoint saved at: {final_checkpoint_dir}')
     trainer.save_state()
 
     model.config.use_cache = True

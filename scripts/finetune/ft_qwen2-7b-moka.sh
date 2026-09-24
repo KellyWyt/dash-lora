@@ -2,7 +2,7 @@
 
 # Environment Variables
 WORLD_SIZE=1
-NPROC_PER_NODE=2
+NPROC_PER_NODE=4
 MASTER_PORT=6666
 RANK=0
 
@@ -18,9 +18,9 @@ GLOBAL_BATCH_SIZE=$WORLD_SIZE*$NPROC_PER_NODE*$LOCAL_BATCH_SIZE*$GRADIENT_ACCUMU
 # Log Arguments
 export TRANSFORMERS_OFFLINE=1
 export WANDB_PROJECT=finetune-qwen2
-RUN_NAME=qwen2-7B_music-moka-ave-r-4-alpha-16
+RUN_NAME=qwen2-7B_moka-ave-r-4-alpha-16-blc_weight-0.25_7_25_12:06
 OUTP_DIR=results
-OUTPUT_LOG=results/log/qwen2/ave/moka-r-4-alpha-16-qwen2_7b_5.10_20:32.log
+OUTPUT_LOG=results/log/qwen2/ave/moka-r-4-alpha-16-qwen2_7b-blc_weight-0.25_7_25_12:06.log
 
 export TOKENIZERS_PARALLELISM='true'
 export ASCEND_LAUNCH_BLOCKING='1'
@@ -40,7 +40,7 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --lora_r 4 \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
-    --blc_weight 1 \
+    --blc_weight 0.25 \
     --blc_alpha 1 \
     --bf16 False \
     --tf32 True \

@@ -4,6 +4,7 @@ import sys
 sys.path.append(os.getcwd())
 import itertools
 import pathlib
+import shutil
 from os.path import exists, join
 
 import numpy as np
@@ -65,7 +66,7 @@ class Test_DistributedSampler(DistributedSampler):
 
 
 def inference(dataloader,ckpt_dir,model,tokenizer,task, mode):
-    save_dir = join(ckpt_dir,f'inference_results_bs_6_{mode}')
+    save_dir = join(ckpt_dir, f'inference_{task}', f'bs1_bf16_mt500_{mode}')
     os.makedirs(save_dir,exist_ok=True)
 
     #==================== CHECK GENERATION CONFIGS ====================#
@@ -75,8 +76,7 @@ def inference(dataloader,ckpt_dir,model,tokenizer,task, mode):
         'max_new_tokens': 500,
         # you can change the used parameetrs, such as:
         #--------- here is for Qwen3-8B [no thinking mode] ---------#
-        'temperature': 0.7,
-        'top_p': 0.8,
+        'do_sample': False,
         'repetition_penalty': 1.1
         #--------- here is for Qwen3-8B [no thinking mode] ---------#
     }
@@ -103,7 +103,9 @@ def inference(dataloader,ckpt_dir,model,tokenizer,task, mode):
     #==================== CHECK GENERATION CONFIGS ====================#
 
     pbar = tqdm(total=len(dataloader),desc=f'inference {task}')
-    fp = join(save_dir,f'inference_{task}.jsonl')
+    fp = join(save_dir, f'results_rank{local_rank}.jsonl')
+    if exists(fp):
+        os.remove(fp)
     for step, sample in enumerate(dataloader):
         batch_metadata = sample.pop('batch_metadata')
         bs = len(batch_metadata)
@@ -149,7 +151,11 @@ def inference(dataloader,ckpt_dir,model,tokenizer,task, mode):
         sample.update(
             gen_params
         )
-        with torch.no_grad():
+        with torch.no_grad(), torch.autocast(
+            device_type="cuda",
+            dtype=torch.bfloat16,
+            enabled=torch.cuda.is_available(),
+        ):
             # print(sample.keys())
             output = model.generate(**sample)
             output = tokenizer.batch_decode(output,skip_special_tokens=False)
@@ -161,6 +167,15 @@ def inference(dataloader,ckpt_dir,model,tokenizer,task, mode):
         
         pbar.update(1)
     pbar.close()
+    dist.barrier()
+    if local_rank == 0:
+        merged_fp = join(save_dir, 'merged_results.jsonl')
+        with open(merged_fp, 'wb') as merged:
+            for rank in range(dist.get_world_size()):
+                with open(join(save_dir, f'results_rank{rank}.jsonl'), 'rb') as shard:
+                    shutil.copyfileobj(shard, merged)
+        print(f'merged inference results saved at: {merged_fp}')
+    dist.barrier()
 
 
 def train(attn_implementation=None):
@@ -274,6 +289,11 @@ def train(attn_implementation=None):
             lora_nums = lora_nums,
             blc_alpha= training_args.blc_alpha,
             blc_weight=training_args.blc_weight,
+            **({
+                "top_k_layers": training_args.top_k_layers,
+                "ratio": training_args.ratio,
+                **({"safe_importance": True} if training_args.dash_lora_safe_importance else {}),
+            } if training_args.loratype == "dash-lora" else {}),
         )
         model = get_peft_model(model, peft_config)
 
@@ -349,6 +369,7 @@ def train(attn_implementation=None):
         # for weight_name in ckpt.keys():
         #     print(weight_name)
 
+    torch.cuda.set_device(local_rank)
     model.eval()
     model.cuda(local_rank)
     model = DDP(model, device_ids=[local_rank], broadcast_buffers=False, find_unused_parameters=False)
@@ -357,8 +378,8 @@ def train(attn_implementation=None):
     dataset, collator = get_dataset_collator(data_args=data_args, tokenizer=tokenizer, 
                                              image_processor=image_processor,mode=extra_args.mode)
     
-    # qwen3-8B need to set batch_size = 4, otherwise the cuda will be out of memory
-    batch_size = 4
+    # qwen3-8B need to set batch_size = 1, otherwise the cuda will be out of memory
+    batch_size = 1
 
     sampler = Test_DistributedSampler(dataset,num_replicas=torch.distributed.get_world_size(),rank=local_rank,shuffle=False)
 
@@ -367,7 +388,7 @@ def train(attn_implementation=None):
     if data_args.avqa_task:
         inference(dataloader=dataloader,ckpt_dir=ckpt_dir,model=model.module,tokenizer=tokenizer,task = 'avqa', mode=extra_args.mode)
     if data_args.ave_task:
-        inference(dataloader=dataloader,ckpt_dir=ckpt_dir,model=model.module,tokenizer=tokenizer,task = 'ave')
+        inference(dataloader=dataloader,ckpt_dir=ckpt_dir,model=model.module,tokenizer=tokenizer,task='ave', mode=extra_args.mode)
 
     if dist.is_initialized():   # check whether the process group is initialized
         dist.destroy_process_group()
@@ -376,4 +397,3 @@ def train(attn_implementation=None):
 
 if __name__ == "__main__":
     train()
-

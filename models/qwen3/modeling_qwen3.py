@@ -549,6 +549,7 @@ class Qwen3ForCausalLM(Qwen3PreTrainedModel, GenerationMixin):
         """
         #------------------- here for moka's modality mask -------------------#
         # print(f"[CHECK THIS] input_ids size: {len(input_ids_all)}")
+        modality_masks = kwargs.pop("modality_masks", None)
         if isinstance(input_ids_all, list):
             input_ids = input_ids_all[0]
             modality_masks=input_ids_all[1:]
@@ -577,10 +578,10 @@ class Qwen3ForCausalLM(Qwen3PreTrainedModel, GenerationMixin):
             if inputs_embeds is not None and len(cache_position) == inputs_embeds.shape[1]:
                 model_inputs[input_ids_key] = None
                 
-                modality_masks.insert(0, inputs_embeds)
-
-                # model_inputs["inputs_embeds"] = inputs_embeds
-                model_inputs["inputs_embeds"] = modality_masks
+                if modality_masks is not None:
+                    model_inputs["inputs_embeds"] = [inputs_embeds, *modality_masks]
+                else:
+                    model_inputs["inputs_embeds"] = inputs_embeds
             else:
                 # `clone` calls in this function ensure a consistent stride. See #32227
                 model_inputs[input_ids_key] = input_ids.clone(memory_format=torch.contiguous_format)
@@ -610,7 +611,7 @@ class Qwen3ForCausalLM(Qwen3PreTrainedModel, GenerationMixin):
             if model_input is not None:
                 if past_key_values is not None:
                     current_input_length = (
-                        model_inputs["inputs_embeds"].shape[1]
+                        (model_inputs["inputs_embeds"][0] if isinstance(model_inputs["inputs_embeds"], list) else model_inputs["inputs_embeds"]).shape[1]
                         if model_inputs.get("inputs_embeds") is not None
                         else model_inputs[input_ids_key].shape[1]
                     )
@@ -627,7 +628,11 @@ class Qwen3ForCausalLM(Qwen3PreTrainedModel, GenerationMixin):
             and attention_mask.ndim == 2
         ):
             if not self.config.is_encoder_decoder and model_inputs["inputs_embeds"] is not None:
-                batch_size, sequence_length, _ = model_inputs["inputs_embeds"].shape
+                batch_size, sequence_length, _ = (
+                    model_inputs["inputs_embeds"][0]
+                    if isinstance(model_inputs["inputs_embeds"], list)
+                    else model_inputs["inputs_embeds"]
+                ).shape
             else:
                 batch_size, sequence_length = model_inputs[input_ids_key].shape[:2]
 

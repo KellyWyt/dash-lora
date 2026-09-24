@@ -139,6 +139,10 @@ class TrainingArguments(transformers.TrainingArguments):
 
     #TODO
     hierarchical_lora: bool = field(default=True)
+    dash_lora_safe_importance: bool = field(
+        default=False,
+        metadata={"help": "Run Dash-LoRA importance on rank 0 in FP32 and broadcast its topology."},
+    )
     top_k_layers: int = field(
         default=65, 
         metadata={"help": "the number of importance layer,but 49+7=56"}

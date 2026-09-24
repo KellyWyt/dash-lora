@@ -122,7 +122,7 @@ def check(path):
 def main():
     # sed42 - 77.89 | sed123 - 76.54 | sed456: 77.34 -> 77.26
     # results=['music_avqa/checkpoint-675/inference_avqa/results_0.jsonl']
-    # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-7/llama_music1-v3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed42_test/all_results.jsonl']
+    results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-share-1-7/llama_music1-v3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed42_test/all_results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800/inference_avqa_bs1_tf32_mt150_seed42/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800_test/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800_test_motivation/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
@@ -130,7 +130,8 @@ def main():
 #     results=['/nfs1/WYT/MokA/results/finetune/llama_music-mem/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed42_test_with_msAudio/results.jsonl']
     # results=['/nfs1/WYT/MokA/results/finetune/llama_music-mem2/checkpoint-1800/inference_avqa_bs6_tf32_mt150_seed42/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/changeForQwen2/inferenceFromMoka+Qwen2-1.5B-Instruct/inference_avqa.jsonl']
-    results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-1.5B_music-ratio-2/checkpoint-2700/inference_avqa/bs6_tf32_mt150_seed42_test/results.jsonl']
+    # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-1.5B_music-ratio-2/checkpoint-2700/inference_avqa/bs6_tf32_mt150_seed42_test/results.jsonl']
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen3/qwen3-8B_avqa_moka-r-4/checkpoint-1998/inference_avqa/bs1_bf16_mt500_test/merged_results.jsonl']
 
 
 

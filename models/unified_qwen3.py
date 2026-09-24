@@ -101,6 +101,8 @@ class UnifiedForCausalLM(Qwen3ForCausalLM,UnifiedMetaForCausalLM):
             output_attentions=output_attentions,
             output_hidden_states=True,
             return_dict=True,
+            cache_position=cache_position,
+            **kwargs,
         )
 
         return output
@@ -122,17 +124,26 @@ class UnifiedForCausalLM(Qwen3ForCausalLM,UnifiedMetaForCausalLM):
             batch_labels = batch_labels,
             batch_X_modals = batch_X_modals,
         )
-        inputs_embeds = inputs['inputs_embeds']
+        inputs_embeds_all = inputs['inputs_embeds']
 
         return super().generate(
-            inputs_embeds = inputs_embeds,
+            inputs_embeds=inputs_embeds_all[0],
+            modality_masks=inputs_embeds_all[1:],
+            attention_mask=inputs["attention_mask"],
             output_hidden_states=False,
             return_dict_in_generate=False,
             **kwargs
         )
     
 
-    def prepare_inputs_for_generation(self, input_ids, past_key_values=None, inputs_embeds=None, **kwargs):
+    def prepare_inputs_for_generation(
+        self,
+        input_ids,
+        past_key_values=None,
+        inputs_embeds=None,
+        modality_masks=None,
+        **kwargs,
+    ):
         # print('into prepare inputs...   input_ids:  ',input_ids,'  past key values:  ',past_key_values is None, '   inputs_emebds: ',inputs_embeds is None)
         # if inputs_embeds is not None:
         #     print(inputs_embeds.shape)
@@ -140,7 +151,11 @@ class UnifiedForCausalLM(Qwen3ForCausalLM,UnifiedMetaForCausalLM):
         #     print(f'past key values:  {past_key_values[10][0].shape}')
         images = kwargs.pop("images", None)
         _inputs = super().prepare_inputs_for_generation(
-            input_ids, past_key_values=past_key_values, inputs_embeds=inputs_embeds, **kwargs
+            input_ids,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            modality_masks=modality_masks,
+            **kwargs,
         )
         # print(f'_inputs>>>>>  {_inputs.keys()}')
         # if 'input_ids' in _inputs.keys():
@@ -159,5 +174,4 @@ class UnifiedForCausalLM(Qwen3ForCausalLM,UnifiedMetaForCausalLM):
 
 AutoConfig.register("unified_qwen3", UnifiedConfig)
 AutoModelForCausalLM.register(UnifiedConfig, UnifiedForCausalLM)
-
 

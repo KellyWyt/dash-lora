@@ -137,6 +137,7 @@ def train(attn_implementation=None):
             lora_nums = lora_nums,
             blc_alpha= training_args.blc_alpha,
             blc_weight=training_args.blc_weight,
+            **({"safe_importance": True} if training_args.dash_lora_safe_importance else {}),
             top_k_layers=training_args.top_k_layers, #NOTE 
             ratio = training_args.ratio #NOTE
         )
@@ -254,6 +255,8 @@ def train(attn_implementation=None):
         trainer.train(resume_from_checkpoint=True)
     else:
         trainer.train()
+    final_checkpoint_dir = trainer.save_final_checkpoint()
+    rank0_print(f'final checkpoint saved at: {final_checkpoint_dir}')
     trainer.save_state()
 
     model.config.use_cache = True

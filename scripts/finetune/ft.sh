@@ -7,19 +7,19 @@ NPROC_PER_NODE=4    # NOTE: change here for training with $NPROC_PER_NODE GPUs
 MASTER_PORT=6666
 RANK=0
 
-llama_ckpt_path=/nfs1/WYT/MokA/pretrained_ckpts/Llama-2-7b-chat-hf
-OUTPUT_LOG=results/finetune-share_1.28_17:49_random_ratio_1.log
+llama_ckpt_path=/nfs1/outdated/WYT/models/Llama-2-7b-chat-hf
 
 # Training Arguments
-LOCAL_BATCH_SIZE=4 # 6
-GRADIENT_ACCUMULATION_STEPS=3 # 2
+LOCAL_BATCH_SIZE=2 # 6
+GRADIENT_ACCUMULATION_STEPS=6 # 2
 GLOBAL_BATCH_SIZE=$WORLD_SIZE*$NPROC_PER_NODE*$LOCAL_BATCH_SIZE*$GRADIENT_ACCUMULATION_STEPS
 # 16*8*4
 # Log Arguments
 export TRANSFORMERS_OFFLINE=1
-export WANDB_PROJECT=finetune-share-1-15
-RUN_NAME=llama_music-share-56-ratio-1-random
+export WANDB_PROJECT=finetune-llama-ave
+RUN_NAME=llama_music-dash-lora-ratio-1-7.25-10:35
 OUTP_DIR=results
+OUTPUT_LOG=results/log/llama2/dash-lora-ratio-1-7.25-10:35.log
 # export CUDA_VISIBLE_DEVICES='0,1,2,3,4,5,6,7'
 export CUDA_VISIBLE_DEVICES='0,1,2,3'
 export TOKENIZERS_PARALLELISM='true'
@@ -58,7 +58,7 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --freeze_backbone True \
     --lora_enable True \
     --bits 32 \
-    --lora_r 444 \
+    --lora_r 4 \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
     --top_k_layers 56 \
@@ -68,18 +68,18 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --bf16 False \
     --tf32 True \
     --fp16 False \
-    --avqa_task True \
-    --ave_task False \
+    --avqa_task False \
+    --ave_task True \
     --save_modules vl_projector,al_projector,lora \
     --visual_branch True \
     --video_frame_nums 10 \
-    --vit_ckpt_path /nfs1/WYT/MokA/pretrained_ckpts/clip-vit-large-patch14 \
+    --vit_ckpt_path /nfs1/outdated/WYT/models/clip-vit-large-patch14 \
     --select_feature patch \
     --image_size 224 \
     --patch_size 14 \
     --visual_query_token_nums 32 \
     --audio_branch True \
-    --BEATs_ckpt_path /nfs1/WYT/MokA/pretrained_ckpts/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt \
+    --BEATs_ckpt_path /nfs1/outdated/WYT/models/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt \
     --audio_query_token_nums 32 \
     --output_dir $OUTP_DIR/$WANDB_PROJECT/$RUN_NAME \
     --num_train_epochs 3 \

@@ -103,8 +103,9 @@ class UnifiedDataset(Dataset):
 
     def add_ave_task_samples(self):
         # NOTE modified for ave: 使用预处理好的视频帧和音频
-        self.ave_annotation_path = 'AVE_Dataset/valid_train_samples.json' 
-        self.ave_data_root = 'AVE_Dataset'
+        # Keep one training row per converted label.
+        self.ave_annotation_path = 'MokA_AudioVisualText/AVE_data/train_samples_ave_deduplicated.json'
+        ave_data_root = 'MokA_AudioVisualText/converted_label_1/converted_label'
         self.ave_preprocess_root = 'AVE_Dataset'  # 预处理后的数据根目录
         tot = 0
 
@@ -125,6 +126,9 @@ class UnifiedDataset(Dataset):
             # 音频路径示例: AVE_Dataset/train/audio/_QQP43H56TA.wav
             curr_video_path = join(self.ave_preprocess_root, self.mode, 'video', vid)
             curr_audio_path = join(self.ave_preprocess_root, self.mode, 'audio', vid + '.wav')
+            label_path = join(ave_data_root,str(vid)+'.txt')
+            output = self.read_label(label_path)
+            output_new=output
 
             # 校验文件是否存在，防止训练中断
             if not exists(curr_audio_path):
@@ -136,7 +140,7 @@ class UnifiedDataset(Dataset):
             f'This is an audio:\n<audio_start><audio><audio_end>\n'
             f'<question_start>Please describe the events and time range that occurred in the video.<question_end>'
             )
-            output = f'event:{event} start_time:{start_time} end_time:{end_time}'
+            # output = f'event:{event} start_time:{start_time} end_time:{end_time}'
             self.samples.append(
                 {
                     'vid': vid,
@@ -147,7 +151,7 @@ class UnifiedDataset(Dataset):
                     'end_time': end_time,
                     'task_name':'ave',
                     'instruction':instruction,
-                    'output': output,
+                    'output': output_new,
                 }
             )
             tot += 1
@@ -186,7 +190,7 @@ class UnifiedDataset(Dataset):
             # output = output + '</s>'
             # # NOTE: 跑之前记得根据这里修改对应的终止符
             # output = output + '</s>'    # for Llama series
-            output = output + ''    # for Qwen2 series
+            output = output + ''    # for qwen2 series
         data = {
             'instruction':instruction,
             'output':output,
@@ -355,9 +359,9 @@ class UnifiedTestDataset(Dataset):
 
     def add_ave_task_samples(self):
         # NOTE modified for ave: 使用预处理好的视频帧和音频
-        self.ave_annotation_path = 'AVE_Dataset/test_samples.json'
+        self.ave_annotation_path = 'MokA_AudioVisualText/AVE_data/test_samples_ave.json'
         self.ave_data_root = 'AVE_Dataset'
-        self.ave_preprocess_root = 'AVE_Dataset'  # 预处理后的数据根目录
+        self.ave_preprocess_root = 'AVE_Dataset'  # 预处理后的  数据根目录
         tot = 0
         with open(self.ave_annotation_path,'r') as f:
             samples = json.load(f)
@@ -497,18 +501,25 @@ class UnifiedTestDataset(Dataset):
 
             video_frame_folder = sample.get('video_path', join(self.ave_preprocess_root, self.mode, 'video', vid))
             audio_path = sample.get('audio_path', join(self.ave_preprocess_root, self.mode, 'audio', vid + '.wav'))
-            # video_frame_folder = join(self.ave_preprocess_root, self.mode, 'video', vid)
+            if not exists(video_frame_folder):
+                raise FileNotFoundError(f"AVE video frame folder not found: {video_frame_folder}")
+            if not exists(audio_path):
+                raise FileNotFoundError(f"AVE audio file not found: {audio_path}")
+
             frames = []
             for i in range(1, self.video_frame_nums + 1):
                 frame_path = join(video_frame_folder, f'frame_{i}.jpg')
+                if not exists(frame_path):
+                    raise FileNotFoundError(f"AVE frame not found: {frame_path}")
                 frame = Image.open(frame_path).convert('RGB')
                 frames.append(frame)
             frames = self.video_processor.preprocess(frames,return_tensors='pt')
             video = frames['pixel_values']  # t,c,h,w
             data['video'] = video
+            data['video_path'] = video_frame_folder
+
             
             # 从预处理好的音频文件读取
-            # audio_path = join(self.ave_preprocess_root, self.mode, 'audio', vid + '.wav')
             audio, sr = librosa.load(audio_path, sr=16000, mono=True)
             length = len(audio)
             tot = 10  # 预处理后的音频时长为10秒
@@ -530,6 +541,8 @@ class UnifiedTestDataset(Dataset):
                 audio_feature.append(fbank)
             audio_feature = torch.stack(audio_feature, dim=0)  # t, L, 128
             data['audio'] = audio_feature
+            data['audio_path'] = audio_path
+
 
 
         return data

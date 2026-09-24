@@ -21,6 +21,28 @@ from utils.util import (find_all_linear_names, rank0_print, rank0write2txt,
 
 local_rank = None
 
+class Qwen3Trainer(UnifiedTrainer):
+    """UnifiedTrainer variant that writes all state required for exact resume."""
+
+    def _get_train_sampler(self, train_dataset=None):
+        """Bridge the Transformers 4.57 sampler API without changing legacy trainers."""
+        if train_dataset is None:
+            train_dataset = self.train_dataset
+        return super(UnifiedTrainer, self)._get_train_sampler(train_dataset)
+
+    def _save_checkpoint(self, model, trial, metrics=None):
+        super()._save_checkpoint(model, trial, metrics)
+        from transformers.trainer import TRAINER_STATE_NAME
+        from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
+
+        checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
+        output_dir = os.path.join(self._get_output_dir(trial=trial), checkpoint_folder)
+        self._save_optimizer_and_scheduler(output_dir)
+        self._save_rng_state(output_dir)
+        if self.args.should_save:
+            self.state.save_to_json(os.path.join(output_dir, TRAINER_STATE_NAME))
+
+
 def train(attn_implementation=None):
     # print('lalala')
     # return
@@ -56,6 +78,8 @@ def train(attn_implementation=None):
         model_args.llm_name = model_type
 
     local_rank = training_args.local_rank
+    if local_rank >= 0 and torch.cuda.is_available():
+        torch.cuda.set_device(local_rank)
     compute_dtype = torch.float32
     if training_args.fp16:
         compute_dtype = torch.float16
@@ -161,8 +185,11 @@ def train(attn_implementation=None):
             lora_nums = lora_nums,
             blc_alpha= training_args.blc_alpha,
             blc_weight=training_args.blc_weight,
-            top_k_layers=training_args.top_k_layers, #NOTE 
-            ratio = training_args.ratio #NOTE
+            **({
+                "top_k_layers": training_args.top_k_layers,
+                "ratio": training_args.ratio,
+                **({"safe_importance": True} if training_args.dash_lora_safe_importance else {}),
+            } if training_args.loratype == "dash-lora" else {}),
         )
         model = get_peft_model(model, peft_config)
 
@@ -309,13 +336,24 @@ def train(attn_implementation=None):
     image_processor = model.get_model().visual_encoder.image_processor if training_args.visual_branch else None
     dataset, collator = get_dataset_collator(data_args=data_args, tokenizer=tokenizer, 
                                              image_processor=image_processor)
-    trainer = UnifiedTrainer(model=model, tokenizer=tokenizer, args=training_args,
+    trainer = Qwen3Trainer(model=model, tokenizer=tokenizer, args=training_args,
                              train_dataset=dataset, data_collator=collator)
 
-    if list(pathlib.Path(training_args.output_dir).glob("checkpoint-*")):
-        trainer.train(resume_from_checkpoint=True)
+    resumable_checkpoints = [
+        checkpoint for checkpoint in pathlib.Path(training_args.output_dir).glob("checkpoint-*")
+        if (checkpoint / "trainer_state.json").is_file()
+    ]
+    if resumable_checkpoints:
+        latest_checkpoint = max(
+            resumable_checkpoints,
+            key=lambda path: int(path.name.split("-")[-1]),
+        )
+        rank0_print(f"resuming from checkpoint: {latest_checkpoint}")
+        trainer.train(resume_from_checkpoint=str(latest_checkpoint))
     else:
         trainer.train()
+    final_checkpoint_dir = trainer.save_final_checkpoint()
+    rank0_print(f'final checkpoint saved at: {final_checkpoint_dir}')
     trainer.save_state()
 
     model.config.use_cache = True
@@ -335,6 +373,4 @@ def train(attn_implementation=None):
 
 if __name__ == "__main__":
     train()
-
-
 

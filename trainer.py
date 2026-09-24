@@ -7,11 +7,11 @@ import torch.nn as nn
 from torch.utils.data import Sampler
 
 from transformers import Trainer
+from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
 from transformers.trainer import (
     is_sagemaker_mp_enabled,
     get_parameter_names,
     has_length,
-    ALL_LAYERNORM_LAYERS,
     logger,
     TRAINER_STATE_NAME,
 )
@@ -225,6 +225,19 @@ class UnifiedTrainer(Trainer):
         # self.args.distributed_state.wait_for_everyone()
         # else:
         #     super(VideoLLaMA2Trainer, self)._save_checkpoint(model, trial, metrics)
+
+    def save_final_checkpoint(self):
+        """Save the final step when it does not land on a regular save interval."""
+        from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
+
+        checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
+        output_dir = os.path.join(self.args.output_dir, checkpoint_folder)
+        weight_path = os.path.join(output_dir, "finetune_weights.bin")
+        if os.path.exists(weight_path):
+            return output_dir
+
+        self._save_checkpoint(self.model, trial=None)
+        return output_dir
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):

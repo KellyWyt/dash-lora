@@ -17,7 +17,7 @@ def safe_div(numerator, denominator):
     return 100 * numerator / denominator if denominator != 0 else 0.0
 
 def check_lenient(path):
-    # 初始化统计字�?
+    # 初始化统计字�??
     # 每个类别存两个数：[strict_correct, lenient_correct]
     stats = {
         'A_count': [], 'A_cmp': [],
@@ -38,12 +38,12 @@ def check_lenient(path):
             # --- 1. 处理 Ground Truth (答案) ---
             answer_raw = sample['output'].split('<|endoftext|>')[0].strip().lower()
             # answer_raw = sample['output'].split('</s>')[0].strip().lower()
-            # 某些答案在列表中�? acoustic_guitar，但文本里可能是 acoustic guitar
+            # 某些答案在列表中�?? acoustic_guitar，但文本里可能是 acoustic guitar
             answer_text = answer_raw.replace('_', ' ') 
             
             # --- 2. 处理 Prediction (预测) ---
             pred_raw = sample['predict'].lower()
-            # 移除特殊的生成token，保留文�?
+            # 移除特殊的生成token，保留文�??
             pred_text = pred_raw.replace('<s>', '').replace('<|endoftext|>', '').replace('<unk>', '')
             
             # --- 3. 严格匹配逻辑 (Strict) ---
@@ -51,7 +51,7 @@ def check_lenient(path):
             matches = re.findall(r'<answer>(.*?)</answer>', pred_raw)
             if len(matches) >= 1:
                 pred_extracted = matches[0].strip().lower()
-                # 只有提取出的内容在答案列表中，且包含答案词，才算严格�?
+                # 只有提取出的内容在答案列表中，且包含答案词，才算严格�??
                 if pred_extracted in answer_list:
                     # strict_hit = 1
                     if answer_raw in pred_extracted:
@@ -59,14 +59,14 @@ def check_lenient(path):
             
             # --- 4. 宽容匹配逻辑 (Lenient) ---
             lenient_hit = 0
-            # 使用正则 \b 匹配单词边界，防�? "no" 匹配�? "piano" �? "not"
-            # re.escape 用于处理可能包含特殊字符的答�?
+            # 使用正则 \b 匹配单词边界，防�?? "no" 匹配�?? "piano" �?? "not"
+            # re.escape 用于处理可能包含特殊字符的答�??
             pattern = r'\b' + re.escape(answer_text) + r'\b'
             
             if re.search(pattern, pred_text):
                 lenient_hit = 1
             
-            # 如果答案�? "acoustic_guitar"，我们也尝试匹配带下划线的版�?
+            # 如果答案�?? "acoustic_guitar"，我们也尝试匹配带下划线的版�??
             if lenient_hit == 0 and '_' in answer_raw:
                 # if re.search(r'\b' + re.escape(answer_text) + r'\b', pred_raw.lower()):
                 #     lenient_hit = 1
@@ -110,14 +110,14 @@ def check_lenient(path):
         l_sum = sum(x[1] for x in key_list)
         return safe_div(s_sum, n), safe_div(l_sum, n), n
 
-    # 打印各子�?
+    # 打印各子�??
     for key, val in stats.items():
         s_acc, l_acc, n = calc_scores(val)
         print(f"{key:<25} | {s_acc:>6.2f} %     | {l_acc:>9.2f} %        | {n:<8}")
 
     print("-" * 70)
     
-    # 汇总计�?
+    # 汇总计�??
     print(f"{'Overall':<25} | {safe_div(strict_correct_total, total):>6.2f} %     | {safe_div(lenient_correct_total, total):>9.2f} %        | {total:<8}")
     
     return total
@@ -149,6 +149,10 @@ def main():
     # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-moka/checkpoint-2700/inference_avqa_3_13/bs2_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-moka  78.35
     # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-ratio-3/checkpoint-2700/inference_avqa/bs2_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-ratio-3-1  78.67
     # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-ratio-1-new/checkpoint-2700/inference_avqa/bs2_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-ratio-1-1  77.23
+
+
+
+    
     # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-moka-r-8/checkpoint-2700/inference_avqa/bs2_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-moka-r-8-alpha-bubian  78.16
     # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-ratio-3-r-8/checkpoint-2700/inference_avqa/bs2_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-r-8-ratio-3-alpha-bubian  78.27
     # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-moka-r-8-alpha-32/checkpoint-2700/inference_avqa/bs2_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-moka-r-8-alpha-infer-bubian  78.16
@@ -171,7 +175,6 @@ def main():
     # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-ratio-3-r-4-alpha-16-random-order-seed-0/checkpoint-2700/inference_avqa_bs6_seed42/bs6_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-random-order-seed-0  78.17 
     # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-ratio-3-r-4-alpha-16-random-order-seed-123/checkpoint-2700/inference_avqa_bs6_seed42/bs6_tf32_mt500_seed42_test/results.jsonl'] # qwen2-7b-random-order-seed-123  77.88      
     results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen2/qwen2-7B_music-ratio-3-r-4-alpha-16-random-ratio-seed-123/checkpoint-2700/inference_avqa_bs6_seed42/bs6_tf32_mt500_seed42_test/results.jsonl']   # qwen2-7b-random-ratio-seed-123  77.64   Text=0.5241, Video=0.0580, Audio=0.4179  
-
 
 
     for result in results:

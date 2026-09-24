@@ -9,7 +9,7 @@ RANK=0
 # qwen2_ckpt_path=pretrained_ckpts/Qwen2-1.5B-Instruct
 qwen2_ckpt_path=pretrained_ckpts/Qwen2-7B
 
-YOUR_CKPT_PARH=results/finetune-qwen2/qwen2-7B_music-moka-r-64-alpha-256/checkpoint-2700 
+YOUR_CKPT_PARH=results/finetune-qwen2/qwen2-7B_moka-ave-r-4-alpha-16-7_24_23:02/checkpoint-279
 # YOUR_CKPT_PARH=results/finetune/qwen2-1.5B_music
 # YOUR_CKPT_PARH=results/finetune-qwen2/qwen2-1.5B_music/checkpoint-600
 
@@ -38,8 +38,8 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --freeze_backbone True \
     --lora_enable True \
     --bits 32 \
-    --lora_r 64 \
-    --lora_alpha 256 \
+    --lora_r 4 \
+    --lora_alpha 16 \
     --lora_dropout 0.05 \
     --blc_weight 1 \
     --blc_alpha 1 \
@@ -47,8 +47,8 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --tf32 False \
     --fp16 False \
     --ckpt_dir $YOUR_CKPT_PARH \
-    --avqa_task True \
-    --ave_task False \
+    --avqa_task False \
+    --ave_task True \
     --visual_branch True \
     --video_frame_nums 10 \
     --vit_ckpt_path /nfs1/outdated/WYT/models/clip-vit-large-patch14 \

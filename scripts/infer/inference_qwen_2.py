@@ -204,8 +204,9 @@ def train(attn_implementation=None):
             lora_nums = lora_nums,
             blc_alpha= training_args.blc_alpha,
             blc_weight=training_args.blc_weight,
-            top_k_layers=training_args.top_k_layers, #NOTE 
-            ratio = training_args.ratio #NOTE
+            **({"safe_importance": True} if training_args.dash_lora_safe_importance else {}),
+            top_k_layers=training_args.top_k_layers,
+            ratio=training_args.ratio
         )
         model = get_peft_model(model, peft_config)
 

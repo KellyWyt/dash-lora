@@ -18,10 +18,10 @@ GLOBAL_BATCH_SIZE=$WORLD_SIZE*$NPROC_PER_NODE*$LOCAL_BATCH_SIZE*$GRADIENT_ACCUMU
 # Log Arguments
 export TRANSFORMERS_OFFLINE=1
 export WANDB_PROJECT=finetune-qwen2
-RUN_NAME=qwen2-7B_music-ratio-3-r-4-alpha-16-random-ratio-seed-456
+RUN_NAME=qwen2-7B_ave-dash-lora-r-4-alpha-16-ratio-1-7.25-10:36
 OUTP_DIR=results
 # OUTPUT_LOG=results/log/qwen2/ratio-3-ratio-3-r-4-alpha-16-random-order-qwen2_7b_3.30_9:27.log
-OUTPUT_LOG=results/log/qwen2/ratio-3-r-4-alpha-16-random-ratio-seed-456-qwen2_7b_4.22_12:50.log
+OUTPUT_LOG=results/log/qwen2/ave/ave-dash-lora-r-4-alpha-16-ratio-1-qwen2_7B_7.25_10:36.log
 
 export TOKENIZERS_PARALLELISM='true'
 export ASCEND_LAUNCH_BLOCKING='1'
@@ -42,14 +42,14 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
     --top_k_layers 50 \
-    --ratio 3 \
+    --ratio 1 \
     --blc_weight 1 \
     --blc_alpha 1 \
     --bf16 False \
     --tf32 True \
     --fp16 False \
-    --avqa_task True \
-    --ave_task False \
+    --avqa_task False \
+    --ave_task True \
     --save_modules vl_projector,al_projector,lora \
     --visual_branch True \
     --video_frame_nums 10 \

@@ -196,7 +196,7 @@ class PretrainDataset(Dataset):
             ]
             instruction = self.tokenizer.apply_chat_template(conversation=messages,add_generation_prompt=True,tokenize=False)
             output = output + '<|eot_id|>'  # qwen2
-            #output = output + '  <|endoftext|>'  # llama2
+            # output = output + '  <|endoftext|>'  # llama2
 
         data = {
             'instruction':instruction,

@@ -84,7 +84,9 @@ def train(attn_implementation=None):
         lora_rank = training_args.lora_r
         lora_alpha = 16
         lora_dropout = 0.05
-        lora_nums = int(len(str(training_args.lora_r)))
+        # lora_nums = int(len(str(training_args.lora_r)))
+        lora_nums = 3
+
         print('lora_nums: ',lora_nums)
         modules_to_save = None
         peft_config = LoraConfig(
@@ -99,6 +101,7 @@ def train(attn_implementation=None):
             lora_nums = lora_nums,
             blc_alpha= training_args.blc_alpha,
             blc_weight=training_args.blc_weight,
+            **({"safe_importance": True} if training_args.dash_lora_safe_importance else {}),
             top_k_layers=training_args.top_k_layers, #NOTE 
             ratio = training_args.ratio #NOTE
         )
@@ -136,8 +139,10 @@ def train(attn_implementation=None):
 
 
     # NOTE: change here for load audio/visual proj params
-    audio_ckpt_dir = 'pretrained_ckpts/av_unified'
-    visual_ckpt_dir = 'pretrained_ckpts/av_unified'
+    # audio_ckpt_dir = 'pretrained_ckpts/av_unified'
+    # visual_ckpt_dir = 'pretrained_ckpts/av_unified'
+    audio_ckpt_dir = '/nfs1/outdated/WYT/models/pretrained'
+    visual_ckpt_dir = '/nfs1/outdated/WYT/models/pretrained'
     
     ckpt = torch.load(join(audio_ckpt_dir,'audio_pretrain.bin'),map_location='cpu')
     weight = ckpt.pop('model.embed_tokens.weight')
@@ -193,6 +198,8 @@ def train(attn_implementation=None):
         trainer.train()
     # trainer.train(resume_from_checkpoint=True)
     
+    final_checkpoint_dir = trainer.save_final_checkpoint()
+    rank0_print(f'final checkpoint saved at: {final_checkpoint_dir}')
     trainer.save_state()
 
     model.config.use_cache = True
@@ -208,6 +215,3 @@ def train(attn_implementation=None):
 
 if __name__ == "__main__":
     train()
-
-
-

@@ -126,18 +126,26 @@ def main():
     # results=['/nfs1/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800_test_smart_prune/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800_test_norm_prune/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-7/llama_music1-v3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed42_test/all_results.jsonl']
-    # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-15/llama_music1-share-30/checkpoint-2403/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-share-1-15/llama_music1-share-30/checkpoint-2403/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800_test_average/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-15/llama_music1-share-56/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
-    # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-7/llama_music1-v3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed42_test/all_results.jsonl']
-    # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-15/llama_music-share-56-ratio-3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-share-1-7/llama_music1-v3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed42_test/all_results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-15/llama_music-share-56-ratio-4/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-15/llama_music-share-56-ratio-1/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
     # results=['/nfs1/WYT/MokA-copy/results/finetune-share-1-15/llama_music-share-56-ratio-4/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl']
 
     # results=['/nfs1/WYT/MokA-copy/results/finetune-qwen2/qwen2-1.5B_music-ratio-2/checkpoint-2700/inference_avqa/bs6_tf32_mt150_seed42_test/results.jsonl']
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen3/qwen3-8B_avqa_moka-r-4/checkpoint-1998/inference_avqa/bs1_bf16_mt500_test/merged_results.jsonl'] #qwen3 + moka + avqa:75.89
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-qwen3/qwen3-8B_avqa_dash-lora-r-4-alpha-16-ratio-3/checkpoint-2994/inference_avqa/bs1_bf16_mt500_test/merged_results.jsonl'] #qwen3 + moka + avqa:76.03
 
-
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800/inference_avqa_bs6_tf32_mt500/results.jsonl']
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune/llama_music/checkpoint-1800/inference_avqa_bs1_tf32_mt150_seed42/results.jsonl']# 77.89
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-share-1-15/llama_music-share-56-ratio-3/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl'] #77.01
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-share-1-15/llama_music-share-56-ratio-1/checkpoint-1800/inference_avqa/bs6_tf32_mt150_seed123_test/results.jsonl'] #77.33
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-llama-avqa/llama2-7b-avqa-dash-ablation-energy-ratio3/checkpoint-1995/inference_ave/bs1_tf32_mt150_seed42_test/merged_results.jsonl'] #llama2 + moka + avqa + ablation-energy:77.16
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-llama-avqa/llama2-7b-avqa-dash-ablation-random_topology-ratio3/checkpoint-1995/inference_ave/bs1_tf32_mt150_seed42_test/merged_results.jsonl'] #llama2 + moka + avqa + ablation-energy:77.25
+    # results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-llama-avqa/llama2-7b-avqa-dash-ablation-global_energy-ratio3/checkpoint-1995/inference_avqa/bs1_tf32_mt150_seed42_test/merged_results.jsonl'] #llama2 + moka + avqa + ablation-global_energy:77.97
+    results=['/nfs1/outdated/WYT/MokA-copy/results/finetune-llama-avqa/llama2-7b-avqa-dash-ablation-reverse_energy-ratio3/checkpoint-1995/inference_ave/bs1_tf32_mt150_seed42_test/merged_results.jsonl'] #llama2 + moka + avqa + reverse_energy:77.40
 
 
     for result in results:

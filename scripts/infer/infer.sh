@@ -8,7 +8,7 @@ NPROC_PER_NODE=4
 MASTER_PORT=6666
 RANK=0
 
-llama_ckpt_path=/nfs1/WYT/MokA-copy/pretrained_ckpts/Llama-2-7b-chat-hf
+llama_ckpt_path=/nfs1/outdated/WYT/models/Llama-2-7b-chat-hf
 
 # Training Arguments
 LOCAL_BATCH_SIZE=1
@@ -41,8 +41,8 @@ export ASCEND_LAUNCH_BLOCKING='1'
 
 torchrun --nproc_per_node $NPROC_PER_NODE \
     --master_port $MASTER_PORT \
-    scripts/finetune/inference_cut_multiGPU.py \
-    --seed 123 \
+    scripts/infer/inference_cut_multiGPU.py \
+    --seed 42 \
     --mode test \
     --llm_name llama \
     --reserved_modality None \
@@ -52,27 +52,28 @@ torchrun --nproc_per_node $NPROC_PER_NODE \
     --freeze_backbone True \
     --lora_enable True \
     --bits 32 \
-    --lora_r 444 \
+    --lora_r 4 \
     --lora_alpha 16 \
     --lora_dropout 0.05 \
-    --ratio 4 \
+    --ratio 3 \
+    --top_k_layers 56 \
     --blc_weight 1 \
     --blc_alpha 1 \
     --bf16 False \
     --tf32 False \
     --fp16 False \
-    --ckpt_dir results/finetune-share-1-15/llama_music-share-56-ratio-4/checkpoint-1600 \
-    --avqa_task True \
-    --ave_task False \
+    --ckpt_dir results/finetune-llama-ave/llama_music-dash-lora-7.24-20:35/checkpoint-207 \
+    --avqa_task False \
+    --ave_task True \
     --device cuda:0 \
     --visual_branch True \
     --video_frame_nums 10 \
-    --vit_ckpt_path /nfs1/WYT/MokA/pretrained_ckpts/clip-vit-large-patch14 \
+    --vit_ckpt_path /nfs1/outdated/WYT/models/clip-vit-large-patch14 \
     --image_size 224 \
     --patch_size 14 \
     --visual_query_token_nums 32 \
     --audio_branch True \
-    --BEATs_ckpt_path /nfs1/WYT/MokA/pretrained_ckpts/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt \
+    --BEATs_ckpt_path /nfs1/outdated/WYT/models/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt \
     --audio_query_token_nums 32 \
     --output_dir 'not_used' \
 

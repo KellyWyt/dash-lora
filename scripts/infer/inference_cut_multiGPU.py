@@ -31,13 +31,13 @@ local_rank = None
 
 def inference_avqa(dataset,collator,dataloader,ckpt_dir,model,tokenizer,num, seed: int, mode: str):
     print(f"lcoal rank: {num}")
-    save_dir = join(ckpt_dir,f'inference_avqa/bs1_tf32_mt150_seed{seed}_{mode}')
+    save_dir = join(ckpt_dir,f'inference_ave/bs1_tf32_mt150_seed{seed}_{mode}')
     os.makedirs(save_dir,exist_ok=True)
     
     name='results'+str(num)+'.jsonl'
     fp = join(save_dir,name)
 
-    all_num=len(dataloader)
+    all_num=len(dataset)
     avg=int(all_num/4)
 
     if(num==0):
@@ -157,7 +157,9 @@ def train(attn_implementation=None):
         lora_rank = training_args.lora_r
         lora_alpha = 16
         lora_dropout = 0.05
-        lora_nums = int(len(str(training_args.lora_r)))
+        # lora_nums = int(len(str(training_args.lora_r)))
+        lora_nums = 3  # modified
+
         modules_to_save = None
         peft_config = LoraConfig(
             task_type = "CAUSAL_LM",
@@ -171,7 +173,9 @@ def train(attn_implementation=None):
             lora_nums = lora_nums,
             blc_alpha= training_args.blc_alpha,
             blc_weight=training_args.blc_weight,
-            # ratio = training_args.ratio
+            **({"safe_importance": True} if training_args.dash_lora_safe_importance else {}),
+            ratio = training_args.ratio,
+            top_k_layers=training_args.top_k_layers
         )
         model = get_peft_model(model, peft_config)
 
